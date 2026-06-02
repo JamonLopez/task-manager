@@ -5,8 +5,11 @@ function App() {
   const [title, setTitle] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [taskPriority, setTaskPriority] = useState("Low");
+  const [taskStatus, setTaskStatus] = useState("To Do");
+  const [creatingTask, setCreatingTask] = useState(false);
 
-  console.log(tasks);
+  console.log(creatingTask);
 
   const deleteTask = (id) => {
     const updatedTasks = tasks.filter((task) => task.id !== id);
@@ -29,20 +32,66 @@ function App() {
   return (
     <div>
       <h1>Task Manager</h1>
-
-      <input value={title} onChange={(e) => setTitle(e.target.value)} />
-      <button
-        onClick={() => {
-          if (!title) {
-            alert("Please enter a task title");
-            return;
-          }
-          setTasks([...tasks, { title, id: Date.now() }]);
+      
+      {creatingTask ? (
+        <button onClick={() => {
+          setCreatingTask(false);
           setTitle("");
-        }}
-      >
-        Add Task
-      </button>
+        }}>
+          Cancel
+        </button>
+      ): (
+        <button onClick={() => setCreatingTask(true)}>New Task</button>
+      )}
+      {creatingTask && (
+        <>
+          <button
+            onClick={() => {
+              if (!title) {
+                alert("Please enter a task title");
+                return;
+              }
+              const newTask = {
+                title,
+                id: Date.now(),
+                priority: taskPriority,
+                status: taskStatus,
+              };
+              setTasks([...tasks, newTask]);
+              setTitle("");
+              setCreatingTask(false);
+            }}
+          >
+            Add Task
+          </button>
+          <div>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <label>
+              Priority
+              <select
+                name="selectPriority"
+                onChange={(e) => setTaskPriority(e.target.value)}
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </label>
+            <label>
+              Status
+              <select
+                name="selectStatus"
+                onChange={(e) => setTaskStatus(e.target.value)}
+              >
+                <option value="Pending">Pending</option>
+                <option value="To Do">To Do</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Done">Done</option>
+              </select>
+            </label>
+          </div>
+        </>
+      )}
       <ul>
         {tasks.map((task) => (
           <li key={task.id}>
@@ -55,7 +104,11 @@ function App() {
                 <button onClick={saveTask}>Save</button>
               </div>
             ) : (
+              <>
               <span>{task.title}</span>
+              <span> / {task.priority}</span>
+              <span> / {task.status}</span>
+              </>
             )}
             {task.id !== editingTaskId && (
               <>
