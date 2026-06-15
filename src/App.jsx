@@ -8,6 +8,8 @@ function App() {
   const [taskPriority, setTaskPriority] = useState("Low");
   const [taskStatus, setTaskStatus] = useState("To Do");
   const [creatingTask, setCreatingTask] = useState(false);
+  const [editingPriority, setEditingPriority] = useState("");
+  const [editingStatus, setEditingStatus] = useState("");
 
   console.log(creatingTask);
 
@@ -20,13 +22,15 @@ function App() {
     if (!editingTaskId) return;
     const updateTasks = tasks.map((task) => {
       if (task.id === editingTaskId) {
-        return { ...task, title: editingTitle };
+        return { ...task, title: editingTitle, priority: editingPriority, status: editingStatus };
       }
       return task;
     });
     setTasks(updateTasks);
     setEditingTaskId(null);
     setEditingTitle("");
+    setEditingPriority("");
+    setEditingStatus("");
   };
 
   return (
@@ -101,6 +105,29 @@ function App() {
                   value={editingTitle}
                   onChange={(e) => setEditingTitle(e.target.value)}
                 />
+                <label>
+                  Priority
+                <select
+                  value={editingPriority}
+                  onChange={(e) => setEditingPriority(e.target.value)}
+                >
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
+                </label>
+                <label>
+                  Status
+                <select
+                  value={editingStatus}
+                  onChange={(e) => setEditingStatus(e.target.value)}
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="To Do">To Do</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Done">Done</option>
+                </select>
+                </label>
                 <button onClick={saveTask}>Save</button>
               </div>
             ) : (
@@ -117,6 +144,8 @@ function App() {
                   onClick={() => {
                     setEditingTaskId(task.id);
                     setEditingTitle(task.title);
+                    setEditingPriority(task.priority);
+                    setEditingStatus(task.status);
                   }}
                 >
                   Edit
