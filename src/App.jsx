@@ -22,7 +22,12 @@ function App() {
     if (!editingTaskId) return;
     const updateTasks = tasks.map((task) => {
       if (task.id === editingTaskId) {
-        return { ...task, title: editingTitle, priority: editingPriority, status: editingStatus };
+        return {
+          ...task,
+          title: editingTitle,
+          priority: editingPriority,
+          status: editingStatus,
+        };
       }
       return task;
     });
@@ -33,18 +38,29 @@ function App() {
     setEditingStatus("");
   };
 
+  const columns = [
+    { title: "To Do", status: "To Do" },
+    { title: "Pending", status: "Pending" },
+    { title: "In Progress", status: "In Progress" },
+    { title: "Done", status: "Done" },
+  ];
+
   return (
     <div>
       <h1>Task Manager</h1>
-      
+
       {creatingTask ? (
-        <button onClick={() => {
-          setCreatingTask(false);
-          setTitle("");
-        }}>
+        <button
+          onClick={() => {
+            setCreatingTask(false);
+            setTitle("");
+            setTaskPriority("Low");
+            setTaskStatus("To Do");
+          }}
+        >
           Cancel
         </button>
-      ): (
+      ) : (
         <button onClick={() => setCreatingTask(true)}>New Task</button>
       )}
       {creatingTask && (
@@ -64,6 +80,8 @@ function App() {
               setTasks([...tasks, newTask]);
               setTitle("");
               setCreatingTask(false);
+              setTaskPriority("Low");
+              setTaskStatus("To Do");
             }}
           >
             Add Task
@@ -74,6 +92,7 @@ function App() {
               Priority
               <select
                 name="selectPriority"
+                value={taskPriority}
                 onChange={(e) => setTaskPriority(e.target.value)}
               >
                 <option value="Low">Low</option>
@@ -85,10 +104,11 @@ function App() {
               Status
               <select
                 name="selectStatus"
+                value={taskStatus}
                 onChange={(e) => setTaskStatus(e.target.value)}
               >
-                <option value="Pending">Pending</option>
                 <option value="To Do">To Do</option>
+                <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Done">Done</option>
               </select>
@@ -96,65 +116,76 @@ function App() {
           </div>
         </>
       )}
-      <ul>
-        {tasks.map((task) => (
-          <li key={task.id}>
-            {task.id === editingTaskId ? (
-              <div>
-                <input
-                  value={editingTitle}
-                  onChange={(e) => setEditingTitle(e.target.value)}
-                />
-                <label>
-                  Priority
-                <select
-                  value={editingPriority}
-                  onChange={(e) => setEditingPriority(e.target.value)}
-                >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
-                </label>
-                <label>
-                  Status
-                <select
-                  value={editingStatus}
-                  onChange={(e) => setEditingStatus(e.target.value)}
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="To Do">To Do</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Done">Done</option>
-                </select>
-                </label>
-                <button onClick={saveTask}>Save</button>
-              </div>
-            ) : (
-              <>
-              <span>{task.title}</span>
-              <span> / {task.priority}</span>
-              <span> / {task.status}</span>
-              </>
-            )}
-            {task.id !== editingTaskId && (
-              <>
-                <button onClick={() => deleteTask(task.id)}>Delete</button>
-                <button
-                  onClick={() => {
-                    setEditingTaskId(task.id);
-                    setEditingTitle(task.title);
-                    setEditingPriority(task.priority);
-                    setEditingStatus(task.status);
-                  }}
-                >
-                  Edit
-                </button>
-              </>
-            )}
-          </li>
+      <div>
+        {" "}
+        {/*Contenedor kanban*/}
+        {columns.map((column) => (
+          <div key={column.status}>
+            <h2>{column.title}</h2>
+            {tasks
+              .filter((task) => task.status === column.status)
+              .map((task) => (
+                <div key={task.id}>
+                  {task.id === editingTaskId ? (
+                    <div>
+                      <input
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                      />
+                      <label>
+                        Priority
+                        <select
+                          value={editingPriority}
+                          onChange={(e) => setEditingPriority(e.target.value)}
+                        >
+                          <option value="Low">Low</option>
+                          <option value="Medium">Medium</option>
+                          <option value="High">High</option>
+                        </select>
+                      </label>
+                      <label>
+                        Status
+                        <select
+                          value={editingStatus}
+                          onChange={(e) => setEditingStatus(e.target.value)}
+                        >
+                          <option value="To Do">To Do</option>
+                          <option value="Pending">Pending</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Done">Done</option>
+                        </select>
+                      </label>
+                      <button onClick={saveTask}>Save</button>
+                    </div>
+                  ) : (
+                    <>
+                      <span>{task.title}</span>
+                      <span>{task.priority}</span>
+                      <span>{task.status}</span>
+                    </>
+                  )}
+                  {task.id !== editingTaskId && (
+                    <>
+                      <button onClick={() => deleteTask(task.id)}>
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingTaskId(task.id);
+                          setEditingTitle(task.title);
+                          setEditingPriority(task.priority);
+                          setEditingStatus(task.status);
+                        }}
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
