@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./App.css";
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -46,23 +47,28 @@ function App() {
   ];
 
   return (
-    <div>
-      <h1>Task Manager</h1>
+    <div className="app">
+      <div className="app-header">
+        <h1>Task Manager</h1>
 
-      {creatingTask ? (
-        <button
-          onClick={() => {
-            setCreatingTask(false);
-            setTitle("");
-            setTaskPriority("Low");
-            setTaskStatus("To Do");
-          }}
-        >
-          Cancel
-        </button>
-      ) : (
-        <button onClick={() => setCreatingTask(true)}>New Task</button>
-      )}
+        {creatingTask ? (
+          <button
+            onClick={() => {
+              setCreatingTask(false);
+              setTitle("");
+              setTaskPriority("Low");
+              setTaskStatus("To Do");
+            }}
+            className="btn-danger"
+          >
+            Cancel
+          </button>
+        ) : (
+          <button className="btn-primary" onClick={() => setCreatingTask(true)}>
+            New Task
+          </button>
+        )}
+      </div>
       {creatingTask && (
         <>
           <button
@@ -83,6 +89,7 @@ function App() {
               setTaskPriority("Low");
               setTaskStatus("To Do");
             }}
+            className="btn-primary"
           >
             Add Task
           </button>
@@ -116,16 +123,16 @@ function App() {
           </div>
         </>
       )}
-      <div>
+      <div className="kanban-board">
         {" "}
         {/*Contenedor kanban*/}
         {columns.map((column) => (
-          <div key={column.status}>
-            <h2>{column.title}</h2>
+          <div key={column.status} className="kanban-column">
+            <h2 className="column-header">{column.title}</h2>
             {tasks
               .filter((task) => task.status === column.status)
               .map((task) => (
-                <div key={task.id}>
+                <div key={task.id} className="task-card">
                   {task.id === editingTaskId ? (
                     <div>
                       <input
@@ -155,21 +162,30 @@ function App() {
                           <option value="Done">Done</option>
                         </select>
                       </label>
-                      <button onClick={saveTask}>Save</button>
+                      <button className="btn-primary" onClick={saveTask}>
+                        Save
+                      </button>
                     </div>
                   ) : (
                     <>
-                      <span>{task.title}</span>
-                      <span>{task.priority}</span>
-                      <span>{task.status}</span>
+                      <p className="task-title">{task.title}</p>
+                      <div className="task-meta">
+                        <span
+                          className={`task-priority priority-${task.priority.toLowerCase()}`}
+                        >
+                          {task.priority}
+                        </span>
+                        <span>{task.status}</span>
+                      </div>
                     </>
                   )}
                   {task.id !== editingTaskId && (
-                    <>
-                      <button onClick={() => deleteTask(task.id)}>
+                    <div className="task-actions">
+                      <button className="btn-danger" onClick={() => deleteTask(task.id)}>
                         Delete
                       </button>
                       <button
+                        className="btn-secondary"
                         onClick={() => {
                           setEditingTaskId(task.id);
                           setEditingTitle(task.title);
@@ -179,7 +195,7 @@ function App() {
                       >
                         Edit
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
               ))}
