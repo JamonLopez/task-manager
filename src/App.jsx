@@ -1,18 +1,15 @@
 import { useState } from "react";
 import "./App.css";
+import TaskModal from "./components/TaskModal";
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [editingTitle, setEditingTitle] = useState("");
   const [taskPriority, setTaskPriority] = useState("Low");
   const [taskStatus, setTaskStatus] = useState("To Do");
   const [creatingTask, setCreatingTask] = useState(false);
-  const [editingPriority, setEditingPriority] = useState("");
-  const [editingStatus, setEditingStatus] = useState("");
-
-  console.log(creatingTask);
+  const [taskMode, setTaskMode] = useState("create");
 
   const deleteTask = (id) => {
     const updatedTasks = tasks.filter((task) => task.id !== id);
@@ -25,9 +22,9 @@ function App() {
       if (task.id === editingTaskId) {
         return {
           ...task,
-          title: editingTitle,
-          priority: editingPriority,
-          status: editingStatus,
+          title: title,
+          priority: taskPriority,
+          status: taskStatus,
         };
       }
       return task;
@@ -50,79 +47,49 @@ function App() {
     <div className="app">
       <div className="app-header">
         <h1>Task Manager</h1>
-
-        {creatingTask ? (
-          <button
-            onClick={() => {
-              setCreatingTask(false);
-              setTitle("");
-              setTaskPriority("Low");
-              setTaskStatus("To Do");
-            }}
-            className="btn-danger"
-          >
-            Cancel
-          </button>
-        ) : (
-          <button className="btn-primary" onClick={() => setCreatingTask(true)}>
-            New Task
-          </button>
-        )}
+        <button className="btn-primary" onClick={() => setCreatingTask(true)}>
+          New Task
+        </button>
       </div>
-      {creatingTask && (
-        <>
-          <button
-            onClick={() => {
-              if (!title) {
-                alert("Please enter a task title");
-                return;
-              }
-              const newTask = {
-                title,
-                id: Date.now(),
-                priority: taskPriority,
-                status: taskStatus,
-              };
-              setTasks([...tasks, newTask]);
-              setTitle("");
-              setCreatingTask(false);
-              setTaskPriority("Low");
-              setTaskStatus("To Do");
-            }}
-            className="btn-primary"
-          >
-            Add Task
-          </button>
-          <div>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} />
-            <label>
-              Priority
-              <select
-                name="selectPriority"
-                value={taskPriority}
-                onChange={(e) => setTaskPriority(e.target.value)}
-              >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-              </select>
-            </label>
-            <label>
-              Status
-              <select
-                name="selectStatus"
-                value={taskStatus}
-                onChange={(e) => setTaskStatus(e.target.value)}
-              >
-                <option value="To Do">To Do</option>
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Done">Done</option>
-              </select>
-            </label>
-          </div>
-        </>
-      )}
+      <TaskModal
+        isOpen={creatingTask}
+        taskMode={taskMode}
+        title={title}
+        setTitle={setTitle}
+        priority={taskPriority}
+        setPriority={setTaskPriority}
+        status={taskStatus}
+        setStatus={setTaskStatus}
+        onClose={() => {
+          setCreatingTask(false);
+          setTitle("");
+          setTaskPriority("Low");
+          setTaskStatus("To Do");
+          setTaskMode("create");
+        }}
+        onSubmit={() => {
+          if (taskMode === "edit") {
+            saveTask();
+          } else {
+            if (!title) {
+              alert("Please enter a task title");
+              return;
+            }
+            const newTask = {
+              title,
+              id: Date.now(),
+              priority: taskPriority,
+              status: taskStatus,
+            };
+            setTasks([...tasks, newTask]);
+            setTitle("");
+            setTaskPriority("Low");
+            setTaskStatus("To Do");
+          }
+          setCreatingTask(false);
+          setTaskMode("create");
+        }}
+      />
       <div className="kanban-board">
         {" "}
         {/*Contenedor kanban*/}
@@ -133,70 +100,35 @@ function App() {
               .filter((task) => task.status === column.status)
               .map((task) => (
                 <div key={task.id} className="task-card">
-                  {task.id === editingTaskId ? (
-                    <div>
-                      <input
-                        value={editingTitle}
-                        onChange={(e) => setEditingTitle(e.target.value)}
-                      />
-                      <label>
-                        Priority
-                        <select
-                          value={editingPriority}
-                          onChange={(e) => setEditingPriority(e.target.value)}
-                        >
-                          <option value="Low">Low</option>
-                          <option value="Medium">Medium</option>
-                          <option value="High">High</option>
-                        </select>
-                      </label>
-                      <label>
-                        Status
-                        <select
-                          value={editingStatus}
-                          onChange={(e) => setEditingStatus(e.target.value)}
-                        >
-                          <option value="To Do">To Do</option>
-                          <option value="Pending">Pending</option>
-                          <option value="In Progress">In Progress</option>
-                          <option value="Done">Done</option>
-                        </select>
-                      </label>
-                      <button className="btn-primary" onClick={saveTask}>
-                        Save
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="task-title">{task.title}</p>
-                      <div className="task-meta">
-                        <span
-                          className={`task-priority priority-${task.priority.toLowerCase()}`}
-                        >
-                          {task.priority}
-                        </span>
-                        <span>{task.status}</span>
-                      </div>
-                    </>
-                  )}
-                  {task.id !== editingTaskId && (
-                    <div className="task-actions">
-                      <button className="btn-danger" onClick={() => deleteTask(task.id)}>
-                        Delete
-                      </button>
-                      <button
-                        className="btn-secondary"
-                        onClick={() => {
-                          setEditingTaskId(task.id);
-                          setEditingTitle(task.title);
-                          setEditingPriority(task.priority);
-                          setEditingStatus(task.status);
-                        }}
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  )}
+                  <div className="task-meta">
+                    <span className="task-title">{task.title}</span>
+                    <span
+                      className={`task-priority priority-${task.priority.toLowerCase()}`}
+                    >
+                      {task.priority}
+                    </span>
+                  </div>
+                  <div className="task-actions">
+                    <button
+                      className="btn-danger"
+                      onClick={() => deleteTask(task.id)}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      className="btn-secondary"
+                      onClick={() => {
+                        setTaskMode("edit");
+                        setEditingTaskId(task.id);
+                        setTitle(task.title);
+                        setTaskPriority(task.priority);
+                        setTaskStatus(task.status);
+                        setCreatingTask(true);
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </div>
                 </div>
               ))}
           </div>
